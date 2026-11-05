@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wothenza Harvester</title>
+<style>
+:root{
+  --bg:#0a0c11;--panel:#11141c;--panel2:#151925;--line:#222839;--txt:#e8ecf5;--mut:#8b93a7;
+  --acc:#7c5cff;--acc2:#00e5a0;--warn:#ffb020;--bad:#ff4d6d;--ok:#00e5a0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#1a1533 0%,transparent 55%),
+radial-gradient(900px 500px at 100% 0%,#0d2a25 0%,transparent 50%),var(--bg);
+color:var(--txt);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh}
+a{color:var(--acc2);text-decoration:none}
+.wrap{max-width:1240px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;gap:16px;padding:8px 0 22px}
+.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,var(--acc),#3b2a8f);
+display:grid;place-items:center;font-weight:800;box-shadow:0 8px 30px #7c5cff44}
+h1{font-size:18px;margin:0;letter-spacing:.3px}
+.sub{color:var(--mut);font-size:12px}
+.spacer{flex:1}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);display:inline-block;margin-right:6px}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel2);color:var(--txt);
+padding:9px 14px;border-radius:10px;font-weight:600;transition:.15s}
+button:hover{border-color:#3a4260;transform:translateY(-1px)}
+button.primary{background:linear-gradient(135deg,var(--acc),#5a3dd6);border-color:transparent}
+button.good{background:linear-gradient(135deg,#00b37e,#009e6f);border-color:transparent}
+button.ghost{background:transparent}
+button.danger{color:var(--bad);border-color:#3a2230}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+@media(max-width:620px){.cards{grid-template-columns:repeat(2,1fr)}}
+.card{background:linear-gradient(180deg,var(--panel),#0e1118);border:1px solid var(--line);
+border-radius:14px;padding:14px 16px;position:relative;overflow:hidden}
+.card:after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,#fff0, #fff0 60%, #ffffff08);pointer-events:none}
+.card .k{color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.12em}
+.card .v{font-size:24px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.card .v small{font-size:12px;color:var(--mut);font-weight:600}
+.tabs{display:flex;gap:6px;margin:4px 0 14px;flex-wrap:wrap}
+.tab{padding:8px 14px;border-radius:10px;border:1px solid transparent;color:var(--mut);background:transparent;font-weight:600}
+.tab.on{background:var(--panel2);border-color:var(--line);color:var(--txt)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input,textarea,select{background:#0b0e15;border:1px solid var(--line);color:var(--txt);
+border-radius:10px;padding:10px 12px;font:inherit;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#4b3a9e;box-shadow:0 0 0 3px #7c5cff22}
+textarea{width:100%;min-height:84px;resize:vertical}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;color:var(--mut);font-size:11px;text-transform:uppercase;letter-spacing:.1em;
+padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+td{padding:9px 10px;border-bottom:1px solid #1a1f2c;vertical-align:middle}
+tr:hover td{background:#ffffff04}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line)}
+.b-ok{color:var(--ok);border-color:#0c4d3a;background:#06251c}
+.b-warn{color:var(--warn);border-color:#4d3a0c;background:#241c06}
+.b-bad{color:var(--bad);border-color:#4d0c1a;background:#25060c}
+.b-mut{color:var(--mut)}
+.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px}
+.muted{color:var(--mut)}
+.scroll{max-height:52vh;overflow:auto;border-radius:12px;border:1px solid var(--line)}
+.split{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+@media(max-width:900px){.split{grid-template-columns:1fr}}
+label{font-size:12px;color:var(--mut);display:block;margin:0 0 5px}
+.field{margin-bottom:12px}
+.logbox{background:#07090d;border:1px solid var(--line);border-radius:12px;padding:12px;
+height:52vh;overflow:auto;font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre-wrap}
+.toast{position:fixed;right:20px;bottom:20px;background:#151925;border:1px solid var(--line);
+padding:12px 16px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.2s;z-index:99}
+.toast.on{opacity:1;transform:none}
+.hidden{display:none}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+@media(max-width:640px){.wrap{padding:14px}header{flex-wrap:wrap}h1{font-size:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">W</div>
+    <div>
+      <h1>Wothenza Harvester</h1>
+      <div class="sub"><span class="dot"></span>canlı · telegram userbot + bot api + scheduler</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="ghost" onclick="askKey()">key</button>
+    <button class="primary" onclick="scanNow()">scan now</button>
+  </header>
+
+  <div class="cards" id="cards">
+    <div class="card"><div class="k">kaynak</div><div class="v" id="c-sources">-</div></div>
+    <div class="card"><div class="k">dosya</div><div class="v" id="c-files">-</div></div>
+    <div class="card"><div class="k">gönderilen</div><div class="v" id="c-sent">-</div></div>
+    <div class="card"><div class="k">kanalda var</div><div class="v" id="c-dest">-</div></div>
+    <div class="card"><div class="k">arşiv</div><div class="v" id="c-arch">-</div></div>
+    <div class="card"><div class="k">kuyruk</div><div class="v" id="c-queue">-</div></div>
+    <div class="card"><div class="k">boyut</div><div class="v" id="c-bytes">-</div></div>
+  </div>
+
+  <div class="tabs" id="main-tabs">
+    <button class="tab on" data-tab="files">dosyalar</button>
+    <button class="tab" data-tab="sources">kaynaklar</button>
+    <button class="tab" data-tab="queue">zamanlanmış</button>
+    <button class="tab" data-tab="logs">loglar</button>
+  </div>
+
+  <section id="pane-files">
+    <div class="panel">
+      <div class="row" style="margin-bottom:12px">
+        <input id="q" placeholder="dosya / kaynak / caption ara..." style="flex:1;min-width:220px" onkeydown="if(event.key==='Enter')loadFiles()">
+        <button onclick="loadFiles()">ara</button>
+        <span class="muted" id="file-count"></span>
+      </div>
+      <div class="tabs" id="file-filters" style="margin-bottom:12px">
+        <button class="tab on" data-scope="all">tümü</button>
+        <button class="tab" data-scope="new">yeni bulunanlar</button>
+        <button class="tab" data-scope="sent">bana gelenler</button>
+        <button class="tab" data-scope="dest">kanalda var</button>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>kaynak tarihi</th><th>dosya</th><th>kaynak</th><th>boyut</th><th>verdict</th><th>durum</th></tr></thead>
+          <tbody id="files-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="pane-sources" class="hidden">
+    <div class="panel">
+      <div class="scroll">
+        <table>
+          <thead><tr><th>tür</th><th>başlık</th><th>username</th><th>son msg</th><th>dosya</th><th>son tarama</th></tr></thead>
+          <tbody id="sources-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="pane-queue" class="hidden">
+    <div class="split">
+      <div class="panel">
+        <div class="scroll">
+          <table>
+            <thead><tr><th>#</th><th>kanal</th><th>plan</th><th>tekrar</th><th>durum</th><th></th></tr></thead>
+            <tbody id="queue-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <h3 style="margin:0 0 12px;font-size:15px">yeni zamanlanmış post</h3>
+        <div class="field"><label>kanal</label><input id="q-channel" value="wothenza" style="width:100%"></div>
+        <div class="field"><label>metin (html)</label><textarea id="q-text" placeholder="<b>Ürün</b> | 🔑 <code>KEY</code> | @wothenzasellbot"></textarea></div>
+        <div class="field"><label>medya yolu (opsiyonel)</label><input id="q-media" placeholder="C:\path\file.zip" style="width:100%"></div>
+        <div class="row">
+          <div class="field" style="flex:1"><label>zaman</label><input id="q-when" type="datetime-local" style="width:100%"></div>
+          <div class="field" style="width:130px"><label>tekrar</label>
+            <select id="q-repeat" style="width:100%"><option value="none">yok</option><option value="daily">günlük</option><option value="weekly">haftalık</option></select>
+          </div>
+        </div>
+        <button class="good" style="width:100%" onclick="addQueue()">kuyruğa ekle</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="pane-logs" class="hidden">
+    <div class="panel"><div class="logbox" id="logbox"></div></div>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const keyStore = 'wz_dash_key';
+let KEY = localStorage.getItem(keyStore) || '';
+let FILE_SCOPE = 'all';
+
+function askKey(){
+  const v = prompt('dashboard key (DASH_PASSWORD):', KEY || '');
+  if(v !== null){ KEY = v.trim(); localStorage.setItem(keyStore, KEY); refreshAll(); }
+}
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 2200);
+}
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function bytes(n){
+  n = Number(n||0); const u=['B','KB','MB','GB']; let i=0;
+  while(n>=1024 && i<3){n/=1024;i++;} return (n<10?n.toFixed(1):Math.round(n))+' '+u[i];
+}
+function dt(s){
+  if(!s) return '-';
+  try{ return new Date(s).toLocaleString('tr-TR'); }catch{ return s; }
+}
+async function api(path, opts={}){
+  const headers = Object.assign({}, opts.headers||{});
+  if(KEY) headers['x-dash-key'] = KEY;
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  if(res.status === 401){ askKey(); throw new Error('unauthorized'); }
+  if(!res.ok){ const t = await res.text(); throw new Error(t || res.status); }
+  return res.json();
+}
+async function loadStats(){
+  try{
+    const s = await api('/api/stats');
+    $('#c-sources').textContent = s.sources;
+    $('#c-files').textContent = s.files;
+    $('#c-sent').textContent = s.sent;
+    $('#c-dest').textContent = s.inDest;
+    $('#c-arch').textContent = s.archived;
+    $('#c-queue').innerHTML = s.pendingQueue + ' <small>/ '+s.sentQueue+'</small>';
+    $('#c-bytes').innerHTML = '<span style="font-size:18px">'+s.totalHuman+'</span>';
+  }catch(e){}
+}
+async function loadFiles(){
+  try{
+    const q = $('#q').value.trim();
+    const scope = FILE_SCOPE === 'all' ? '' : FILE_SCOPE;
+    const rows = await api('/api/files?limit=300&scope='+encodeURIComponent(scope)+'&q='+encodeURIComponent(q));
+    $('#file-count').textContent = rows.length + ' kayıt';
+    $('#files-body').innerHTML = rows.map(r=>{
+      const vb = r.verdict==='malicious'?'b-bad':r.verdict==='suspicious'?'b-warn':r.verdict==='clean'?'b-ok':'b-mut';
+      const st = r.inDest
+        ? '<span class="badge b-warn">kanalda var</span>'
+        : (r.sent ? '<span class="badge b-ok">gönderildi</span>' : '<span class="badge b-mut">beklemede</span>');
+      const when = r.msgDate || r.createdAt;
+      return `<tr>
+        <td class="muted mono" title="bulundu: ${esc(dt(r.createdAt))}">${esc(dt(when))}</td>
+        <td><b>${esc(r.fileName)}</b><div class="muted mono">${esc((r.hash||'').slice(0,16))}… · msg ${r.msgId}</div></td>
+        <td>${esc(r.sourceTitle)}</td>
+        <td class="mono">${bytes(r.size)}</td>
+        <td><span class="badge ${vb}">${esc(r.verdict)}</span></td>
+        <td>${st}${r.archived?' <span class="badge b-mut">arşiv</span>':''}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="empty">kayıt yok</td></tr>';
+  }catch(e){}
+}
+async function loadSources(){
+  try{
+    const rows = await api('/api/sources');
+    $('#sources-body').innerHTML = rows.map(r=>`<tr>
+      <td><span class="badge b-mut">${esc(r.kind)}</span></td>
+      <td><b>${esc(r.title)}</b></td>
+      <td class="mono">${r.username?'@'+esc(r.username):'-'}</td>
+      <td class="mono">${r.lastMsgId}</td>
+      <td class="mono">${r.filesFound}</td>
+      <td class="muted mono">${esc(dt(r.scannedAt))}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="empty">kaynak yok</td></tr>';
+  }catch(e){}
+}
+async function loadQueue(){
+  try{
+    const rows = await api('/api/queue');
+    $('#queue-body').innerHTML = rows.map(r=>{
+      const sb = r.status==='sent'?'b-ok':r.status==='error'?'b-bad':'b-warn';
+      return `<tr>
+        <td class="mono">${r.id}</td>
+        <td>@${esc(r.channel)}</td>
+        <td class="mono">${esc(dt(r.scheduleAt))}</td>
+        <td class="muted">${esc(r.repeat)}</td>
+        <td><span class="badge ${sb}">${esc(r.status)}</span></td>
+        <td class="row" style="gap:6px">
+          ${r.status!=='sent'?`<button class="ghost" onclick="runQueue(${r.id})">at</button>`:''}
+          <button class="danger" onclick="delQueue(${r.id})">sil</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="6" class="empty">kuyruk boş</td></tr>';
+  }catch(e){}
+}
+async function loadLogs(){
+  try{
+    const rows = await api('/api/logs?take=300');
+    const box = $('#logbox');
+    const atBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 30;
+    box.textContent = rows.join('\n');
+    if(atBottom) box.scrollTop = box.scrollHeight;
+  }catch(e){}
+}
+async function scanNow(){
+  try{ await api('/api/scan',{method:'POST'}); toast('scan kuyruğa alındı'); setTimeout(refreshAll, 1200); }
+  catch(e){ toast('hata: '+e.message); }
+}
+async function addQueue(){
+  const body = {
+    channel: $('#q-channel').value.trim(),
+    text: $('#q-text').value.trim(),
+    mediaPath: $('#q-media').value.trim() || null,
+    scheduleAt: $('#q-when').value ? new Date($('#q-when').value).toISOString() : new Date().toISOString(),
+    repeat: $('#q-repeat').value
+  };
+  if(!body.channel || !body.text){ toast('kanal ve metin gerekli'); return; }
+  try{ await api('/api/queue',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+    toast('eklendi'); $('#q-text').value=''; loadQueue(); loadStats(); }
+  catch(e){ toast('hata: '+e.message); }
+}
+async function runQueue(id){
+  try{ await api('/api/queue/'+id+'/run',{method:'POST'}); toast('gönderildi'); loadQueue(); }
+  catch(e){ toast('hata: '+e.message); }
+}
+async function delQueue(id){
+  try{ await api('/api/queue/'+id,{method:'DELETE'}); loadQueue(); loadStats(); }
+  catch(e){ toast('hata: '+e.message); }
+}
+function refreshAll(){ loadStats(); loadFiles(); loadSources(); loadQueue(); loadLogs(); }
+
+document.querySelectorAll('#main-tabs .tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('#main-tabs .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  ['files','sources','queue','logs'].forEach(n=>$('#pane-'+n).classList.add('hidden'));
+  $('#pane-'+t.dataset.tab).classList.remove('hidden');
+  if(t.dataset.tab==='logs') loadLogs();
+});
+
+document.querySelectorAll('#file-filters .tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('#file-filters .tab').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');
+  FILE_SCOPE = t.dataset.scope;
+  loadFiles();
+});
+
+const now = new Date(); now.setMinutes(now.getMinutes()+10);
+const local = new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,16);
+$('#q-when').value = local;
+
+refreshAll();
+setInterval(refreshAll, 12000);
+</script>
+</body>
+</html>

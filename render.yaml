@@ -1,0 +1,70 @@
+services:
+  - type: web
+    name: wothenza-harvester
+    runtime: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /healthz
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: TG_API_ID
+        sync: false
+      - key: TG_API_HASH
+        sync: false
+      - key: TG_PHONE
+        sync: false
+      - key: TG_PASSWORD
+        sync: false
+      - key: TG_SESSION_PATH
+        value: /data/wz.session
+      - key: TG_SESSION_B64
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: OWNER_CHAT_ID
+        value: "8821782197"
+      - key: DEST_CHANNEL
+        value: wothenza
+      - key: DB_PATH
+        value: /data/wz.db
+      - key: TEMP_DIR
+        value: /data/tmp
+      - key: ARCHIVE_DIR
+        value: /data/archive
+      - key: ARCHIVE
+        value: "true"
+      - key: SCAN_INTERVAL_MIN
+        value: "30"
+      - key: SCAN_DEPTH
+        value: "200"
+      - key: DEST_DEPTH
+        value: "2000"
+      - key: SCAN_MAX_PER_SOURCE
+        value: "2000"
+      - key: SCAN_MAX_SOURCES
+        value: "0"
+      - key: DM_DEPTH
+        value: "100"
+      - key: MAX_FILE_MB
+        value: "400"
+      - key: FORWARD_MAX_MB
+        value: "4000"
+      - key: ARCHIVE_MAX_MB
+        value: "100"
+      - key: SCAN_DMS
+        value: "true"
+      - key: SCAN_SAVED
+        value: "true"
+      - key: DRY_RUN
+        value: "false"
+      - key: VT_API_KEY
+        sync: false
+      - key: VT_UPLOAD
+        value: "false"
+      - key: DASH_PASSWORD
+        sync: false
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 5
